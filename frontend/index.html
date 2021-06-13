@@ -1,17 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
+    <link rel="stylesheet" href="styles.css" />
+    
     <title>TB2</title>
-</head>
-<body>
+  </head>
+  <body>
 
-    <h1>Aplicación</h1>
-
+    <div class="main-container">
+      <div class="form">
+        <div class="field">
+          <label>Monoxido de Carbono (ug/m3)</label>
+          <input id="monoxido-carbono" type="number" />
+        </div>
+        <div class="field">
+          <label>Ácido Sulfhídrico (ug/m3)</label>
+          <input id="acido-sulfhidrico" type="number" />
+        </div>
+        <div class="field">
+          <label>Dióxido de nitrógeno (ug/m3)</label>
+          <input id="dioxido-nitrogeno" type="number" />
+        </div>
+        <div class="field">
+          <label>Ozono (ug/m3)</label>
+          <input id="ozono" type="number" />
+        </div>
+        <div class="field">
+          <label>PM10 (ug/m3)</label>
+          <input id="pm10" type="number" />
+        </div>
+        <div class="field">
+          <label>PM2,5 (ug/m3)</label>
+          <input id="pm25" type="number" />
+        </div>
+        <div class="field">
+          <label>Dióxido de azufre (ug/m3)</label>
+          <input id="dioxido-azufre" type="number" />
+        </div>
+        <div class="field">
+          <label>Ruido (dB)</label>
+          <input id="ruido" type="number" />
+        </div>
+        <div class="field">
+          <label>UV</label>
+          <input id="uv" type="number" />
+        </div>
+        <div class="field">
+          <label>Humedad (%)</label>
+          <input id="humedad" type="number" />
+        </div>
+        <div class="field">
+          <label>Presión(hPa)</label>
+          <input id="presion" type="number" />
+        </div>
+        <button id="submit-btn">Enviar</button>
+      </div>
+      <div class="result">
+          <p>Temperatura en Miraflores</p>
+          <p class="prediction-text"><span class="temperature" id="prediction-result">0.00</span> <span class="symbol"> °C </span> </p>
+      </div>
+    </div>
 
     <script src="main.js"></script>
-</body>
+  </body>
 </html>
