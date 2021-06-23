@@ -1,10 +1,6 @@
 ## Especificaciones
 Proyecto realizado en go 1.15
 
-## Dependencias 
-
-`go get github.com/mackerelio/go-osstat/memory`
-
 
 ## Ejecutar nodos
 ```

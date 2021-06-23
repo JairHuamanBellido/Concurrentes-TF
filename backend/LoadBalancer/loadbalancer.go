@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"sort"
 )
 
 type Packet struct {
@@ -14,8 +13,9 @@ type Packet struct {
 }
 
 type Host struct {
-	Name   string `json:"host"`
-	Memory MemoryStats
+	Name   string      `json:"host"`
+	IsBusy bool        `json:"isBusy"`
+	Memory MemoryStats `json:"memory"`
 }
 
 type MemoryStats struct {
@@ -24,7 +24,13 @@ type MemoryStats struct {
 	Free  float64 `json:"free"`
 }
 
-var hosts []string = []string{"http://192.168.1.15:3000/", "http://192.168.1.16:3000/", "http://192.168.1.17:3000/", "http://192.168.1.18:3000/", "http://192.168.1.19:3000/"}
+var hosts []*Host = []*Host{
+	&Host{Name: "http://192.168.1.15:3000/", Memory: MemoryStats{}, IsBusy: false},
+	&Host{Name: "http://192.168.1.16:3000/", Memory: MemoryStats{}, IsBusy: false},
+	&Host{Name: "http://192.168.1.17:3000/", Memory: MemoryStats{}, IsBusy: false},
+	&Host{Name: "http://192.168.1.18:3000/", Memory: MemoryStats{}, IsBusy: false},
+	&Host{Name: "http://192.168.1.19:3000/", Memory: MemoryStats{}, IsBusy: false},
+}
 
 func enableCors(res *http.ResponseWriter) {
 	(*res).Header().Set("Access-Control-Allow-Origin", "*")
@@ -44,45 +50,93 @@ func getBodyResponse(model interface{}, resp http.Response) interface{} {
 	return response
 }
 
-func RoundRobin(c chan string) string {
+// func RoundRobin() string {
 
-	var targets []Host
+// 	var targets []Host
+// 	for _, v := range hosts {
+// 		resp, _ := http.Get(v.Name + "/status")
+// 		defer (resp).Body.Close()
+// 		body, _ := ioutil.ReadAll(resp.Body)
+
+// 		bodyString := string(body)
+
+// 		var response MemoryStats
+
+// 		json.Unmarshal([]byte(bodyString), &response)
+// 		targets = append(targets, Host{Name: v, Memory: response})
+
+// 	}
+
+// 	sort.SliceStable(targets, func(i, j int) bool {
+// 		return (targets[i].Memory).Free > targets[j].Memory.Free
+// 	})
+
+// 	fmt.Print("\n====\n")
+// 	for _, v := range targets {
+// 		fmt.Println(v.Name, " : ", v.Memory.Free)
+// 	}
+
+// 	return targets[0].Name
+
+// }
+
+func ocuppyHost(host chan Host, freeHost Host) {
+	host <- freeHost
+}
+
+func freeHost(host Host) {
 	for _, v := range hosts {
-		resp, _ := http.Get(v + "/status")
-		defer (resp).Body.Close()
-		body, _ := ioutil.ReadAll(resp.Body)
+		if v.Name == host.Name {
+			*&v.IsBusy = false
+		}
+	}
+}
 
-		bodyString := string(body)
+func checkAllBusy() {
+	var c int = 0
 
-		var response MemoryStats
-
-		json.Unmarshal([]byte(bodyString), &response)
-		targets = append(targets, Host{Name: v, Memory: response})
-
+	for _, v := range hosts {
+		if v.IsBusy {
+			c++
+		}
 	}
 
-	sort.SliceStable(targets, func(i, j int) bool {
-		return (targets[i].Memory).Free > targets[j].Memory.Free
-	})
+	if len(hosts) == c {
+		fmt.Println("Todos ocupados")
+		for _, v := range hosts {
+			if v.IsBusy {
+				*&v.IsBusy = false
 
-	fmt.Print("\n====\n")
-	for _, v := range targets {
-		fmt.Println(v.Name, " : ", v.Memory.Free)
+			}
+
+		}
 	}
-
-	return targets[0].Name
-
 }
 
 func packet(res http.ResponseWriter, req *http.Request) {
 
 	enableCors(&res)
-	host := make(chan string)
+	host := make(chan Host)
 	path := req.URL
-	resp, _ := http.Get(RoundRobin(host) + path.String())
+
+	for _, v := range hosts {
+		if v.IsBusy == false {
+			*&v.IsBusy = true
+			go ocuppyHost(host, *v)
+			break
+		}
+	}
+	p := <-host
+
+	fmt.Println("Solicitud enviada a", p.Name)
+	actual_host_recepted := fmt.Sprintf("%v%v", p.Name, path.String())
+	resp, _ := http.Get(actual_host_recepted)
+
 	defer (resp).Body.Close()
+	// time.Sleep(1 * time.Second)
 
 	json.NewEncoder(res).Encode(getBodyResponse(Packet{}, *resp))
+	freeHost(p)
 }
 
 func handleRequest() {
