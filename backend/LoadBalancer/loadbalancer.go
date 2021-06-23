@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sort"
 )
 
 type Packet struct {
@@ -13,7 +15,7 @@ type Packet struct {
 
 type Host struct {
 	Name   string `json:"host"`
-	Memory interface{}
+	Memory MemoryStats
 }
 
 type MemoryStats struct {
@@ -22,7 +24,7 @@ type MemoryStats struct {
 	Free  float64 `json:"free"`
 }
 
-var hosts []string = []string{"http://192.168.1.8:3031/", "http://192.168.1.8:3032/", "http://192.168.1.8:3033/", "http://192.168.1.8:3034/", "http://192.168.1.8:3035/"}
+var hosts []string = []string{"http://192.168.1.15:3000/", "http://192.168.1.16:3000/", "http://192.168.1.17:3000/", "http://192.168.1.18:3000/", "http://192.168.1.19:3000/"}
 
 func enableCors(res *http.ResponseWriter) {
 	(*res).Header().Set("Access-Control-Allow-Origin", "*")
@@ -46,15 +48,29 @@ func RoundRobin(c chan string) string {
 
 	var targets []Host
 	for _, v := range hosts {
-		resp, _ := http.Get(v + "status")
+		resp, _ := http.Get(v + "/status")
 		defer (resp).Body.Close()
-		memorys := getBodyResponse(MemoryStats{}, *resp)
+		body, _ := ioutil.ReadAll(resp.Body)
 
-		targets = append(targets, Host{Name: v, Memory: memorys})
+		bodyString := string(body)
+
+		var response MemoryStats
+
+		json.Unmarshal([]byte(bodyString), &response)
+		targets = append(targets, Host{Name: v, Memory: response})
 
 	}
 
-	return targets[3].Name
+	sort.SliceStable(targets, func(i, j int) bool {
+		return (targets[i].Memory).Free > targets[j].Memory.Free
+	})
+
+	fmt.Print("\n====\n")
+	for _, v := range targets {
+		fmt.Println(v.Name, " : ", v.Memory.Free)
+	}
+
+	return targets[0].Name
 
 }
 
@@ -62,12 +78,11 @@ func packet(res http.ResponseWriter, req *http.Request) {
 
 	enableCors(&res)
 	host := make(chan string)
-
-	resp, _ := http.Get(RoundRobin(host))
+	path := req.URL
+	resp, _ := http.Get(RoundRobin(host) + path.String())
 	defer (resp).Body.Close()
 
 	json.NewEncoder(res).Encode(getBodyResponse(Packet{}, *resp))
-
 }
 
 func handleRequest() {
