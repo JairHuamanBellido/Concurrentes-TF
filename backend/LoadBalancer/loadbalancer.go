@@ -50,36 +50,6 @@ func getBodyResponse(model interface{}, resp http.Response) interface{} {
 	return response
 }
 
-// func RoundRobin() string {
-
-// 	var targets []Host
-// 	for _, v := range hosts {
-// 		resp, _ := http.Get(v.Name + "/status")
-// 		defer (resp).Body.Close()
-// 		body, _ := ioutil.ReadAll(resp.Body)
-
-// 		bodyString := string(body)
-
-// 		var response MemoryStats
-
-// 		json.Unmarshal([]byte(bodyString), &response)
-// 		targets = append(targets, Host{Name: v, Memory: response})
-
-// 	}
-
-// 	sort.SliceStable(targets, func(i, j int) bool {
-// 		return (targets[i].Memory).Free > targets[j].Memory.Free
-// 	})
-
-// 	fmt.Print("\n====\n")
-// 	for _, v := range targets {
-// 		fmt.Println(v.Name, " : ", v.Memory.Free)
-// 	}
-
-// 	return targets[0].Name
-
-// }
-
 func ocuppyHost(host chan Host, freeHost Host) {
 	host <- freeHost
 }

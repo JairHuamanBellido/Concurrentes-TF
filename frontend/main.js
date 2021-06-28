@@ -17,7 +17,7 @@ let prediction_text = document.getElementById("prediction-result")
 
 submitButton.addEventListener("click", () => {
 
-    fetch(`http://localhost:3030/?monoxidoCarbono=${monoxidoCarbono.value}&acidoSulfridico=${acidoSulfhridico.value}&dioxidoDeNitrogeno=${dioxidoNitrogeno.value}&ozono=${ozono.value}&pm10=${pm10.value}&pm25=${pm25.value}&dioxidoDeAzufre=${dioxidoAzufre.value}&ruido=${ruido.value}&uv=${uv.value}&humedad=${humedad.value}&presion=${presion.value}`)
+    fetch(`http://192.168.1.11:3000/?monoxidoCarbono=${monoxidoCarbono.value}&acidoSulfridico=${acidoSulfhridico.value}&dioxidoDeNitrogeno=${dioxidoNitrogeno.value}&ozono=${ozono.value}&pm10=${pm10.value}&pm25=${pm25.value}&dioxidoDeAzufre=${dioxidoAzufre.value}&ruido=${ruido.value}&uv=${uv.value}&humedad=${humedad.value}&presion=${presion.value}`)
     .then((s) => s.json())
     .then((data) => {
         prediction_text.textContent= data.Temperatura
